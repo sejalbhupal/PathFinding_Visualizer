@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pathfinding Algorithm Visualizer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #334155;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #60a5fa, #34d399);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .tagline {
+            font-size: 1.2rem;
+            color: #94a3b8;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+        }
+        
+        .dashboard {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(30, 41, 59, 0.7);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            border: 1px solid #475569;
+        }
+        
+        .dashboard-section {
+            margin-bottom: 30px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid #475569;
+        }
+        
+        .dashboard-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .section-title {
+            font-size: 1.4rem;
+            margin-bottom: 18px;
+            color: #60a5fa;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title i {
+            font-size: 1.3rem;
+        }
+        
+        .algorithms-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .algorithm-btn {
+            background: #334155;
+            border: none;
+            padding: 14px 12px;
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .algorithm-btn:hover {
+            background: #475569;
+            transform: translateY(-2px);
+        }
+        
+        .algorithm-btn.active {
+            background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        .algorithm-btn i {
+            font-size: 1.2rem;
+        }
+        
+        .speed-control {
+            margin-top: 10px;
+        }
+        
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .slider-value {
+            min-width: 40px;
+            text-align: center;
+            font-weight: 600;
+            color: #34d399;
+        }
+        
+        input[type="range"] {
+            flex-grow: 1;
+            height: 8px;
+            -webkit-appearance: none;
+            background: #334155;
+            border-radius: 4px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #60a5fa;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .grid-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .grid-btn {
+            background: #334155;
+            border: none;
+            padding: 14px 12px;
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .grid-btn:hover {
+            background: #475569;
+        }
+        
+        .grid-btn.clear {
+            background: #dc2626;
+        }
+        
+        .grid-btn.clear:hover {
+            background: #ef4444;
+        }
+        
+        .grid-btn.start {
+            background: #16a34a;
+        }
+        
+        .grid-btn.start:hover {
+            background: #22c55e;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .stat-card {
+            background: #334155;
+            border-radius: 8px;
+            padding: 18px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #60a5fa;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+        
+        .visualizer {
+            flex: 2;
+            min-width: 600px;
+            background: rgba(15, 23, 42, 0.7);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            border: 1px solid #475569;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .grid-container {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: auto;
+            margin-bottom: 25px;
+            padding: 10px;
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 10px;
+            min-height: 500px;
+        }
+        
+        .grid {
+            display: grid;
+            grid-gap: 2px;
+            background-color: #334155;
+            padding: 2px;
+            border-radius: 4px;
+        }
+        
+        .grid-cell {
+            width: 26px;
+            height: 26px;
+            background-color: #1e293b;
+            border-radius: 3px;
+            transition: background-color 0.15s;
+        }
+        
+        .grid-cell.start {
+            background-color: #10b981;
+        }
+        
+        .grid-cell.end {
+            background-color: #ef4444;
+        }
+        
+        .grid-cell.wall {
+            background-color: #475569;
+        }
+        
+        .grid-cell.visited {
+            background-color: rgba(96, 165, 250, 0.7);
+        }
+        
+        .grid-cell.path {
+            background-color: #fbbf24;
+        }
+        
+        .grid-cell:hover {
+            opacity: 0.8;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 25px;
+            margin-top: 20px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+        }
+        
+        .legend-text {
+            font-size: 0.9rem;
+            color: #cbd5e1;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #334155;
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+        
+        .instructions {
+            margin-top: 10px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #cbd5e1;
+        }
+        
+        @media (max-width: 1100px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .visualizer {
+                min-width: 100%;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .algorithms-grid, .grid-controls, .stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .grid-cell {
+                width: 22px;
+                height: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-route"></i> Pathfinding Visualizer</h1>
+            <p class="tagline">Visualize how different pathfinding algorithms find the shortest path</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="dashboard">
+                <div class="dashboard-section">
+                    <h3 class="section-title"><i class="fas fa-project-diagram"></i> Algorithms</h3>
+                    <div class="algorithms-grid">
+                        <button class="algorithm-btn active" data-algorithm="dijkstra">
+                            <i class="fas fa-calculator"></i> Dijkstra's Algorithm
+                        </button>
+                        <button class="algorithm-btn" data-algorithm="astar">
+                            <i class="fas fa-star"></i> A* Search
+                        </button>
+                        <button class="algorithm-btn" data-algorithm="bfs">
+                            <i class="fas fa-expand-arrows-alt"></i> Breadth-First Search
+                        </button>
+                        <button class="algorithm-btn" data-algorithm="dfs">
+                            <i class="fas fa-long-arrow-alt-down"></i> Depth-First Search
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="dashboard-section">
+                    <h3 class="section-title"><i class="fas fa-tachometer-alt"></i> Visualization Speed</h3>
+                    <div class="speed-control">
+                        <div class="slider-container">
+                            <span>Slow</span>
+                            <input type="range" id="speed-slider" min="1" max="100" value="50">
+                            <span>Fast</span>
+                            <div class="slider-value" id="speed-value">50</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="dashboard-section">
+                    <h3 class="section-title"><i class="fas fa-th"></i> Grid Controls</h3>
+                    <div class="grid-controls">
+                        <button class="grid-btn" id="clear-path">
+                            <i class="fas fa-eraser"></i> Clear Path
+                        </button>
+                        <button class="grid-btn" id="clear-walls">
+                            <i class="fas fa-trash-alt"></i> Clear Walls
+                        </button>
+                        <button class="grid-btn clear" id="clear-grid">
+                            <i class="fas fa-broom"></i> Clear Grid
+                        </button>
+                        <button class="grid-btn start" id="start-visualization">
+                            <i class="fas fa-play"></i> Start Visualization
+                        </button>
+                    </div>
+                    
+                    <div class="instructions">
+                        <p><i class="fas fa-mouse-pointer"></i> Click to place start/end nodes</p>
+                        <p><i class="fas fa-draw-polygon"></i> Drag to create walls</p>
+                    </div>
+                </div>
+                
+                <div class="dashboard-section">
+                    <h3 class="section-title"><i class="fas fa-chart-bar"></i> Statistics</h3>
+                    <div class="stats">
+                        <div class="stat-card">
+                            <div class="stat-value" id="path-length">0</div>
+                            <div class="stat-label">Path Length</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="visited-nodes">0</div>
+                            <div class="stat-label">Visited Nodes</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="time-taken">0</div>
+                            <div class="stat-label">Time (ms)</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="algorithm">Dijkstra</div>
+                            <div class="stat-label">Algorithm</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="visualizer">
+                <div class="grid-container">
+                    <div class="grid" id="grid"></div>
+                </div>
+                
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #10b981;"></div>
+                        <div class="legend-text">Start Node</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #ef4444;"></div>
+                        <div class="legend-text">End Node</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #475569;"></div>
+                        <div class="legend-text">Wall Node</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: rgba(96, 165, 250, 0.7);"></div>
+                        <div class="legend-text">Visited Node</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #fbbf24;"></div>
+                        <div class="legend-text">Shortest Path</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Pathfinding Algorithm Visualizer | Interactive Dashboard | Created with HTML, CSS & JavaScript</p>
+            <p>Drag nodes to reposition | Click algorithms to select | Adjust speed for visualization</p>
+        </footer>
+    </div>
+
+    <script>
+        // Grid dimensions
+        const ROWS = 20;
+        const COLS = 35;
+        
+        // Grid state
+        let grid = [];
+        let startNode = {row: 10, col: 5};
+        let endNode = {row: 10, col: 29};
+        let selectedAlgorithm = 'dijkstra';
+        let visualizationSpeed = 50;
+        let isVisualizing = false;
+        let mouseIsDown = false;
+        let isPlacingStart = false;
+        let isPlacingEnd = false;
+        
+        // Initialize the application
+        function init() {
+            createGrid();
+            setupEventListeners();
+            updateStats();
+        }
+        
+        // Create the grid
+        function createGrid() {
+            const gridElement = document.getElementById('grid');
+            gridElement.innerHTML = '';
+            
+            // Set grid template
+            gridElement.style.gridTemplateColumns = `repeat(${COLS}, 1fr)`;
+            
+            // Create grid array and elements
+            grid = [];
+            for (let row = 0; row < ROWS; row++) {
+                grid[row] = [];
+                for (let col = 0; col < COLS; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    
+                    // Check if this is start or end node
+                    if (row === startNode.row && col === startNode.col) {
+                        cell.classList.add('start');
+                    } else if (row === endNode.row && col === endNode.col) {
+                        cell.classList.add('end');
+                    }
+                    
+                    gridElement.appendChild(cell);
+                    grid[row][col] = {
+                        row,
+                        col,
+                        isStart: row === startNode.row && col === startNode.col,
+                        isEnd: row === endNode.row && col === endNode.col,
+                        isWall: false,
+                        isVisited: false,
+                        isPath: false,
+                        previousNode: null,
+                        distance: Infinity,
+                        element: cell
+                    };
+                    
+                    // Add event listeners for cell interaction
+                    cell.addEventListener('mousedown', () => handleCellMouseDown(row, col));
+                    cell.addEventListener('mouseenter', () => handleCellMouseEnter(row, col));
+                    cell.addEventListener('mouseup', () => { mouseIsDown = false; });
+                }
+            }
+            
+            // Add event listener for mouseup on document to handle dragging outside cells
+            document.addEventListener('mouseup', () => { 
+                mouseIsDown = false;
+                isPlacingStart = false;
+                isPlacingEnd = false;
+            });
+        }
+        
+        // Handle mouse down on a cell
+        function handleCellMouseDown(row, col) {
+            if (isVisualizing) return;
+            
+            mouseIsDown = true;
+            const node = grid[row][col];
+            
+            if (node.isStart) {
+                isPlacingStart = true;
+                return;
+            }
+            
+            if (node.isEnd) {
+                isPlacingEnd = true;
+                return;
+            }
+            
+            // Toggle wall
+            node.isWall = !node.isWall;
+            node.element.classList.toggle('wall');
+            clearPath();
+        }
+        
+        // Handle mouse enter on a cell (for dragging)
+        function handleCellMouseEnter(row, col) {
+            if (!mouseIsDown || isVisualizing) return;
+            
+            const node = grid[row][col];
+            
+            if (isPlacingStart) {
+                // Move start node
+                grid[startNode.row][startNode.col].isStart = false;
+                grid[startNode.row][startNode.col].element.classList.remove('start');
+                
+                startNode = {row, col};
+                node.isStart = true;
+                node.element.classList.add('start');
+                clearPath();
+                return;
+            }
+            
+            if (isPlacingEnd) {
+                // Move end node
+                grid[endNode.row][endNode.col].isEnd = false;
+                grid[endNode.row][endNode.col].element.classList.remove('end');
+                
+                endNode = {row, col};
+                node.isEnd = true;
+                node.element.classList.add('end');
+                clearPath();
+                return;
+            }
+            
+            // Place wall
+            if (!node.isStart && !node.isEnd) {
+                node.isWall = true;
+                node.element.classList.add('wall');
+                clearPath();
+            }
+        }
+        
+        // Setup event listeners for dashboard controls
+        function setupEventListeners() {
+            // Algorithm buttons
+            document.querySelectorAll('.algorithm-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (isVisualizing) return;
+                    
+                    document.querySelectorAll('.algorithm-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    selectedAlgorithm = this.dataset.algorithm;
+                    document.getElementById('algorithm').textContent = formatAlgorithmName(selectedAlgorithm);
+                    clearPath();
+                });
+            });
+            
+            // Speed slider
+            const speedSlider = document.getElementById('speed-slider');
+            const speedValue = document.getElementById('speed-value');
+            
+            speedSlider.addEventListener('input', function() {
+                visualizationSpeed = parseInt(this.value);
+                speedValue.textContent = visualizationSpeed;
+            });
+            
+            // Control buttons
+            document.getElementById('clear-path').addEventListener('click', clearPath);
+            document.getElementById('clear-walls').addEventListener('click', clearWalls);
+            document.getElementById('clear-grid').addEventListener('click', clearGrid);
+            document.getElementById('start-visualization').addEventListener('click', startVisualization);
+        }
+        
+        // Clear the visualized path
+        function clearPath() {
+            if (isVisualizing) return;
+            
+            for (let row = 0; row < ROWS; row++) {
+                for (let col = 0; col < COLS; col++) {
+                    const node = grid[row][col];
+                    if (!node.isStart && !node.isEnd && !node.isWall) {
+                        node.isVisited = false;
+                        node.isPath = false;
+                        node.element.className = 'grid-cell';
+                        if (node.isStart) node.element.classList.add('start');
+                        if (node.isEnd) node.element.classList.add('end');
+                        if (node.isWall) node.element.classList.add('wall');
+                    }
+                }
+            }
+            
+            updateStats();
+        }
+        
+        // Clear all walls
+        function clearWalls() {
+            if (isVisualizing) return;
+            
+            for (let row = 0; row < ROWS; row++) {
+                for (let col = 0; col < COLS; col++) {
+                    const node = grid[row][col];
+                    if (node.isWall) {
+                        node.isWall = false;
+                        node.element.classList.remove('wall');
+                    }
+                }
+            }
+            
+            clearPath();
+        }
+        
+        // Clear entire grid
+        function clearGrid() {
+            if (isVisualizing) return;
+            
+            startNode = {row: 10, col: 5};
+            endNode = {row: 10, col: 29};
+            createGrid();
+            updateStats();
+        }
+        
+        // Start the pathfinding visualization
+        function startVisualization() {
+            if (isVisualizing) return;
+            
+            clearPath();
+            isVisualizing = true;
+            
+            // Disable controls during visualization
+            document.querySelectorAll('.algorithm-btn, .grid-btn').forEach(btn => {
+                btn.style.opacity = '0.6';
+                btn.style.cursor = 'not-allowed';
+            });
+            
+            // Reset nodes
+            for (let row = 0; row < ROWS; row++) {
+                for (let col = 0; col < COLS; col++) {
+                    const node = grid[row][col];
+                    node.isVisited = false;
+                    node.isPath = false;
+                    node.previousNode = null;
+                    node.distance = Infinity;
+                }
+            }
+            
+            // Run selected algorithm
+            let foundPath = false;
+            switch (selectedAlgorithm) {
+                case 'dijkstra':
+                    foundPath = dijkstra();
+                    break;
+                case 'astar':
+                    foundPath = aStar();
+                    break;
+                case 'bfs':
+                    foundPath = bfs();
+                    break;
+                case 'dfs':
+                    foundPath = dfs();
+                    break;
+            }
+            
+            // If path found, visualize it
+            if (foundPath) {
+                visualizePath();
+            } else {
+                // If no path found, re-enable controls
+                setTimeout(() => {
+                    isVisualizing = false;
+                    document.querySelectorAll('.algorithm-btn, .grid-btn').forEach(btn => {
+                        btn.style.opacity = '1';
+                        btn.style.cursor = 'pointer';
+                    });
+                    alert("No path found!");
+                }, 500);
+            }
+        }
+        
+        // Dijkstra's algorithm
+        function dijkstra() {
+            const start = grid[startNode.row][startNode.col];
+            start.distance = 0;
+            const unvisitedNodes = getAllNodes();
+            const visitedNodesInOrder = [];
+            
+            while (unvisitedNodes.length > 0) {
+                sortNodesByDistance(unvisitedNodes);
+                const closestNode = unvisitedNodes.shift();
+                
+                if (closestNode.isWall) continue;
+                if (closestNode.distance === Infinity) return false;
+                
+                closestNode.isVisited = true;
+                visitedNodesInOrder.push(closestNode);
+                
+                if (closestNode === grid[endNode.row][endNode.col]) {
+                    // Found the end node
+                    visualizeVisitedNodes(visitedNodesInOrder, true);
+                    return true;
+                }
+                
+                updateUnvisitedNeighbors(closestNode);
+            }
+            
+            return false;
+        }
+        
+        // A* algorithm
+        function aStar() {
+            const start = grid[startNode.row][startNode.col];
+            const end = grid[endNode.row][endNode.col];
+            
+            start.distance = 0;
+            start.totalCost = heuristic(start, end);
+            const openSet = [start];
+            const visitedNodesInOrder = [];
+            const closedSet = new Set();
+            
+            while (openSet.length > 0) {
+                sortNodesByTotalCost(openSet);
+                const currentNode = openSet.shift();
+                
+                if (currentNode.isWall) continue;
+                
+                currentNode.isVisited = true;
+                visitedNodesInOrder.push(currentNode);
+                
+                if (currentNode === end) {
+                    // Found the end node
+                    visualizeVisitedNodes(visitedNodesInOrder, true);
+                    return true;
+                }
+                
+                closedSet.add(currentNode);
+                
+                const neighbors = getNeighbors(currentNode);
+                for (const neighbor of neighbors) {
+                    if (neighbor.isWall || closedSet.has(neighbor)) continue;
+                    
+                    const tentativeDistance = currentNode.distance + 1;
+                    
+                    if (tentativeDistance < neighbor.distance) {
+                        neighbor.previousNode = currentNode;
+                        neighbor.distance = tentativeDistance;
+                        neighbor.totalCost = neighbor.distance + heuristic(neighbor, end);
+                        
+                        if (!openSet.includes(neighbor)) {
+                            openSet.push(neighbor);
+                        }
+                    }
+                }
+            }
+            
+            return false;
+        }
+        
+        // Breadth-First Search
+        function bfs() {
+            const start = grid[startNode.row][startNode.col];
+            const end = grid[endNode.row][endNode.col];
+            const queue = [start];
+            const visitedNodesInOrder = [];
+            const visited = new Set();
+            visited.add(start);
+            
+            while (queue.length > 0) {
+                const currentNode = queue.shift();
+                currentNode.isVisited = true;
+                visitedNodesInOrder.push(currentNode);
+                
+                if (currentNode === end) {
+                    // Found the end node
+                    visualizeVisitedNodes(visitedNodesInOrder, true);
+                    return true;
+                }
+                
+                const neighbors = getNeighbors(currentNode);
+                for (const neighbor of neighbors) {
+                    if (!neighbor.isWall && !visited.has(neighbor)) {
+                        neighbor.previousNode = currentNode;
+                        visited.add(neighbor);
+                        queue.push(neighbor);
+                    }
+                }
+            }
+            
+            return false;
+        }
+        
+        // Depth-First Search
+        function dfs() {
+            const start = grid[startNode.row][startNode.col];
+            const end = grid[endNode.row][endNode.col];
+            const stack = [start];
+            const visitedNodesInOrder = [];
+            const visited = new Set();
+            visited.add(start);
+            
+            while (stack.length > 0) {
+                const currentNode = stack.pop();
+                currentNode.isVisited = true;
+                visitedNodesInOrder.push(currentNode);
+                
+                if (currentNode === end) {
+                    // Found the end node
+                    visualizeVisitedNodes(visitedNodesInOrder, true);
+                    return true;
+                }
+                
+                const neighbors = getNeighbors(currentNode);
+                for (const neighbor of neighbors) {
+                    if (!neighbor.isWall && !visited.has(neighbor)) {
+                        neighbor.previousNode = currentNode;
+                        visited.add(neighbor);
+                        stack.push(neighbor);
+                    }
+                }
+            }
+            
+            return false;
+        }
+        
+        // Helper function: Get all nodes as a flat array
+        function getAllNodes() {
+            const nodes = [];
+            for (let row = 0; row < ROWS; row++) {
+                for (let col = 0; col < COLS; col++) {
+                    nodes.push(grid[row][col]);
+                }
+            }
+            return nodes;
+        }
+        
+        // Helper function: Sort nodes by distance
+        function sortNodesByDistance(unvisitedNodes) {
+            unvisitedNodes.sort((nodeA, nodeB) => nodeA.distance - nodeB.distance);
+        }
+        
+        // Helper function: Sort nodes by total cost (for A*)
+        function sortNodesByTotalCost(nodes) {
+            nodes.sort((nodeA, nodeB) => nodeA.totalCost - nodeB.totalCost);
+        }
+        
+        // Helper function: Update unvisited neighbors
+        function updateUnvisitedNeighbors(node) {
+            const neighbors = getNeighbors(node);
+            for (const neighbor of neighbors) {
+                if (!neighbor.isVisited && !neighbor.isWall) {
+                    const newDistance = node.distance + 1;
+                    if (newDistance < neighbor.distance) {
+                        neighbor.distance = newDistance;
+                        neighbor.previousNode = node;
+                    }
+                }
+            }
+        }
+        
+        // Helper function: Get neighbors of a node
+        function getNeighbors(node) {
+            const neighbors = [];
+            const {row, col} = node;
+            
+            if (row > 0) neighbors.push(grid[row-1][col]);
+            if (row < ROWS-1) neighbors.push(grid[row+1][col]);
+            if (col > 0) neighbors.push(grid[row][col-1]);
+            if (col < COLS-1) neighbors.push(grid[row][col+1]);
+            
+            return neighbors;
+        }
+        
+        // Helper function: Heuristic for A* (Manhattan distance)
+        function heuristic(nodeA, nodeB) {
+            return Math.abs(nodeA.row - nodeB.row) + Math.abs(nodeA.col - nodeB.col);
+        }
+        
+        // Visualize visited nodes with animation
+        function visualizeVisitedNodes(visitedNodesInOrder, foundPath) {
+            for (let i = 0; i < visitedNodesInOrder.length; i++) {
+                setTimeout(() => {
+                    const node = visitedNodesInOrder[i];
+                    if (!node.isStart && !node.isEnd) {
+                        node.element.classList.add('visited');
+                    }
+                    
+                    // If we've visualized all nodes and found a path, visualize it
+                    if (foundPath && i === visitedNodesInOrder.length - 1) {
+                        setTimeout(() => {
+                            visualizePath();
+                        }, (100 - visualizationSpeed) * 10);
+                    }
+                    
+                    // Update visited nodes count
+                    if (i === visitedNodesInOrder.length - 1) {
+                        document.getElementById('visited-nodes').textContent = visitedNodesInOrder.length;
+                    }
+                }, i * (100 - visualizationSpeed));
+            }
+        }
+        
+        // Visualize the shortest path
+        function visualizePath() {
+            const path = getPath();
+            for (let i = 0; i < path.length; i++) {
+                setTimeout(() => {
+                    const node = path[i];
+                    if (!node.isStart && !node.isEnd) {
+                        node.element.classList.add('path');
+                    }
+                    
+                    // Update path length
+                    document.getElementById('path-length').textContent = path.length - 1;
+                    
+                    // If we've visualized the entire path, re-enable controls
+                    if (i === path.length - 1) {
+                        setTimeout(() => {
+                            isVisualizing = false;
+                            document.querySelectorAll('.algorithm-btn, .grid-btn').forEach(btn => {
+                                btn.style.opacity = '1';
+                                btn.style.cursor = 'pointer';
+                            });
+                            document.getElementById('time-taken').textContent = 
+                                Math.round((path.length + document.getElementById('visited-nodes').textContent) * (100 - visualizationSpeed) / 10);
+                        }, 500);
+                    }
+                }, i * (100 - visualizationSpeed) * 2);
+            }
+        }
+        
+        // Get the shortest path from end to start
+        function getPath() {
+            const path = [];
+            let currentNode = grid[endNode.row][endNode.col];
+            
+            while (currentNode !== null) {
+                path.unshift(currentNode);
+                currentNode = currentNode.previousNode;
+            }
+            
+            return path;
+        }
+        
+        // Format algorithm name for display
+        function formatAlgorithmName(algo) {
+            switch(algo) {
+                case 'dijkstra': return "Dijkstra's";
+                case 'astar': return "A* Search";
+                case 'bfs': return "Breadth-First Search";
+                case 'dfs': return "Depth-First Search";
+                default: return "Dijkstra's";
+            }
+        }
+        
+        // Update statistics
+        function updateStats() {
+            document.getElementById('algorithm').textContent = formatAlgorithmName(selectedAlgorithm);
+            document.getElementById('path-length').textContent = '0';
+            document.getElementById('visited-nodes').textContent = '0';
+            document.getElementById('time-taken').textContent = '0';
+        }
+        
+        // Initialize the app when page loads
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
